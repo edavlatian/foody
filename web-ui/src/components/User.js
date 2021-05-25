@@ -65,7 +65,6 @@ export default class Users extends React.Component {
         this.setState({user: response.data});
         this.setState({error: null});
       }
-
       this.setState({isLoading: false});
     });
     
