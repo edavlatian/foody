@@ -65,7 +65,7 @@ export default class Users extends React.Component {
   }
 
   render() {
-    if(this.state.user){
+    if(!this.state.user){
       return (
         <div>
           <h1>User information</h1>
