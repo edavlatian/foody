@@ -65,6 +65,15 @@ export default class Users extends React.Component {
   }
 
   render() {
+    if(this.state.user){
+      return (
+        <div>
+          <h1>User information</h1>
+          <p>User ID {this.props.match.params.userId} not found!</p>
+        </div>
+      )
+    }
+
     return (
       <div>
         <h1>User information</h1>
