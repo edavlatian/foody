@@ -19,7 +19,7 @@
       "array-bracket-spacing": [ "error", "never" ],
       "max-len": [ 
         "error",
-        120,
+        124,
         {
           "ignoreStrings": true,
           "ignoreTemplateLiterals": true,

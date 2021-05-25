@@ -9,7 +9,9 @@ export default class Users extends React.Component {
 
   state = {
     user: {},
-    userFoods: []
+    userFoods: [],
+    error: null,
+    isLoading: true
   }
 
   async addFood(foodId) {
@@ -56,8 +58,16 @@ export default class Users extends React.Component {
 
   componentDidMount() {
     axios.get(`${process.env.REACT_APP_PUBLIC_API_URL}/users/${this.props.match.params.userId}`).then((response) => {
-      this.setState({user: response.data});
-    })
+      if(response.data.statusCode === 500){
+        this.setState({user: null});
+        this.setState({error: true})
+      } else {
+        this.setState({user: response.data});
+        this.setState({error: null});
+      }
+
+      this.setState({isLoading: false});
+    });
     
     axios.get(`${process.env.REACT_APP_PUBLIC_API_URL}/users/${this.props.match.params.userId}/foods`).then((response) => {
       this.setState({userFoods: response.data});
@@ -65,50 +75,59 @@ export default class Users extends React.Component {
   }
 
   render() {
-    if(!this.state.user){
-      return (
+    if(this.state.isLoading){
+      return(
         <div>
           <h1>User information</h1>
-          <p>User ID {this.props.match.params.userId} not found!</p>
+          <p>Loading...</p>
         </div>
       )
+    } else {
+      if(this.state.error){
+        return (
+          <div>
+            <h1>User information</h1>
+            <p>User ID {this.props.match.params.userId} not found!</p>
+          </div>
+        )
+      } else {
+        return (
+          <div>
+            <h1>User information</h1>
+            <p>ID: {this.state.user.id}</p>
+            <p>Name: {this.state.user.name}</p>
+            <p>Email: {this.state.user.email}</p>
+    
+            <SearchDropdown
+              inputId='food-search'
+              inputPlaceholder='Search for foods...'
+              dropdownId='searched-foods'
+              optionClassName='food'
+              optionTextField='description'
+              optionIdField='id'
+              onInputChange={this.searchFood.bind(this)}
+              onOptionClick={this.addFood.bind(this)}
+            />
+    
+            <h2>Foods</h2>
+            <table>
+              <thead>
+                <tr><th>ID</th><th>Description</th><th>Publication date</th><th>Weekly servings</th><th>Actions</th></tr>
+              </thead>
+              <tbody>
+                {this.state.userFoods.map(userFood =>
+                  <tr key={userFood.id}>
+                    <td>{userFood.food.id}</td>
+                    <td>{userFood.food.description}</td>
+                    <td>{userFood.food.publicationDate}</td>
+                    <td>{userFood.servingsPerWeek ?? 0}</td>
+                    <td><button onClick={() => this.removeFood(userFood.food.id)}>Remove</button></td>
+                  </tr>)}
+              </tbody>
+            </table>
+          </div>
+        )
+      }
     }
-
-    return (
-      <div>
-        <h1>User information</h1>
-        <p>ID: {this.state.user.id}</p>
-        <p>Name: {this.state.user.name}</p>
-        <p>Email: {this.state.user.email}</p>
-
-        <SearchDropdown
-          inputId='food-search'
-          inputPlaceholder='Search for foods...'
-          dropdownId='searched-foods'
-          optionClassName='food'
-          optionTextField='description'
-          optionIdField='id'
-          onInputChange={this.searchFood.bind(this)}
-          onOptionClick={this.addFood.bind(this)}
-        />
-
-        <h2>Foods</h2>
-        <table>
-          <thead>
-            <tr><th>ID</th><th>Description</th><th>Publication date</th><th>Weekly servings</th><th>Actions</th></tr>
-          </thead>
-          <tbody>
-            {this.state.userFoods.map(userFood =>
-              <tr key={userFood.id}>
-                <td>{userFood.food.id}</td>
-                <td>{userFood.food.description}</td>
-                <td>{userFood.food.publicationDate}</td>
-                <td>{userFood.servingsPerWeek ?? 0}</td>
-                <td><button onClick={() => this.removeFood(userFood.food.id)}>Remove</button></td>
-              </tr>)}
-          </tbody>
-        </table>
-      </div>
-    )
   }
 }
